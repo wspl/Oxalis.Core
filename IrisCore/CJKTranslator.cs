@@ -17,7 +17,38 @@ namespace Iris.Core
             ParseChinesePinyin();
         }
 
-        public string Translate(string input)
+        private void MultiTranslate(ref List<string> tResult, string left, string right = "")
+        {
+            if (left.Length > 0)
+            {
+                var lastChar = left.Substring(left.Length - 1);
+
+                if (Dict.ContainsKey(lastChar))
+                {
+                    foreach (var pho in Dict[lastChar])
+                    {
+                        MultiTranslate(ref tResult, left.Remove(left.Length - 1), pho + " " + right);
+                    }
+                }
+                else
+                {
+                    MultiTranslate(ref tResult, left.Remove(left.Length - 1), right = lastChar + right);;
+                }
+            }
+            else
+            {
+                tResult.Add(new Regex(@"\s+").Replace(right, " "));
+            }
+        }
+
+        public List<string> TranslateToList(string input)
+        {
+            var tResult = new List<string>();
+            MultiTranslate(ref tResult, input);
+            return tResult;
+        }
+
+        public string TranslateToString(string input)
         {
             var translatedString = "";
             foreach (var character in input)
@@ -37,7 +68,7 @@ namespace Iris.Core
 
         private void ParseChinesePinyin()
         {
-            var chineseDictPath = Path.Combine(Configure.ResourcesPath, "CJK", "dict_chinese.js");
+            var chineseDictPath = Path.Combine(Configuration.ResourcesPath, "CJK", "dict_chinese.js");
             var fileLines = Regex.Split(File.ReadAllText(chineseDictPath), "dict");
             var dictLines = fileLines.Where((val, i) => i > 1 && i < fileLines.Length - 1).ToArray();
 
@@ -56,9 +87,16 @@ namespace Iris.Core
                 {
                     var noPhoneticPinyin = pinyin.Select((py) => {
                         var pIndex = phoneticDictA.IndexOf(py.ToString());
-                        if (pIndex == -1) return py;
-                        else return phoneticDictB[pIndex];
+                        if (pIndex == -1)
+                        {
+                            return py;
+                        }
+                        else
+                        {
+                            return phoneticDictB[pIndex];
+                        }
                     }).ToArray();
+
                     var pyStr = string.Join("", noPhoneticPinyin);
                     if (!pinyins.Contains(pyStr))
                     {

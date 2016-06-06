@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Iris.Core
 {
-    class Configure
+    class Configuration
     {
         public static string AppFolderPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         public static string ResourcesPath = Path.Combine(AppFolderPath, "Resources");

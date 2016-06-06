@@ -44,7 +44,7 @@ namespace Iris.Core
                     // Launch Everything
                     var proEverything = new Process();
 
-                    var proEverythingPath = Path.Combine(Configure.ResourcesPath, "stein_everything.exe");
+                    var proEverythingPath = Path.Combine(Configuration.ResourcesPath, "stein_everything.exe");
                     var proEverythingArgs = "-install-service -install-client-service";
 
                     proEverything.StartInfo = new ProcessStartInfo(proEverythingPath, proEverythingArgs);

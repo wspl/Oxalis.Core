@@ -65,7 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CJKTranslator.cs" />
-    <Compile Include="Configure.cs" />
+    <Compile Include="Configuration.cs" />
     <Compile Include="Everything.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
