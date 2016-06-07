@@ -27,7 +27,7 @@ namespace Iris.Core
                 {
                     foreach (var pho in Dict[lastChar])
                     {
-                        MultiTranslate(ref tResult, left.Remove(left.Length - 1), pho + " " + right);
+                        MultiTranslate(ref tResult, left.Remove(left.Length - 1), " " + pho + " " + right);
                     }
                 }
                 else

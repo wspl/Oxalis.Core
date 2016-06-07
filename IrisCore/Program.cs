@@ -21,121 +21,62 @@ namespace Iris.Core
 
         static void Main(string[] args)
         {
+            
+
             var cjk = new CJKTranslator();
-            var testString = "网易云音乐";
+            var everything = new Everything();
 
-            var rs = cjk.TranslateToList(testString.ToLower());
-
-            var pool = new List<int[]>();
-
-            var beforDT = DateTime.Now;
-
-            // Get Trait
-            foreach (var ctx in rs)
+            var displayLink = new Dictionary<string, List<Everything.EverythingResultItem>>();
+            var displayLinksDict = new Dictionary<string, List<string>>();
+            var startMenuPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            var links = everything.Search(@"Start Menu regex:.lnk$");
+            foreach (var link in links.Results)
             {
-                SearchWorker(pool, ctx, new int[Keyword.Length].Select((v) => -1).ToArray(), 0, 0);
+                var linkName = link.Name.Remove(link.Name.Length - 4, 4);
+                if (displayLink.ContainsKey(linkName))
+                {
+                    displayLink[linkName].Add(link);
+                }
+                else
+                {
+                    displayLink.Add(linkName, new List<Everything.EverythingResultItem> { link });
+                    displayLinksDict.Add(linkName, cjk.TranslateToList(linkName));
+                }
             }
 
-            Console.WriteLine("Get Trait Array Count：{0}", pool.Count);
-
-            // Calculate First Chars Pos Score
-            var fcPosList = new List<int> { 0 };
-            var currentFcPos = 0;
+            var searcher = new Searcher();
             while (true)
             {
-                var nextSpacePos = rs[0].IndexOf(' ', currentFcPos);
-                currentFcPos = nextSpacePos + 1;
-                if (nextSpacePos == -1) break;
-                fcPosList.Add(currentFcPos);
-            }
+                Console.Write("\n> ");
+                var keyword = Console.ReadLine();
+                var beforDT = DateTime.Now;
 
-            var fcScores = new List<double>();
-            foreach (var trait in pool)
-            {
-                var matchCount = 0;
-                foreach (var pos in trait)
+                var result = new List<KeyValuePair<string, double>>();
+                foreach (var di in displayLinksDict)
                 {
-                    if (fcPosList.Contains(pos))
+                    var score = searcher.Match(keyword, di.Value);
+                    if (score > 0)
                     {
-                        matchCount += 1;
+                        result.Add(new KeyValuePair<string, double>(di.Key, score));
                     }
                 }
-                fcScores.Add(matchCount / ((double)(trait.Length + rs[0].Length) / 2));
-            }
-            var fcScore = fcScores.Count > 0 ? fcScores.Max() : 0;
+                result.Sort((pair1, pair2) => -pair1.Value.CompareTo(pair2.Value));
 
-            // Calculate Continuity Score
-            var conScores = new List<double>();
-            foreach (var trait in pool)
-            {
-                var continueCount = 0;
-                for (var i = 1; i < trait.Length; i += 1)
+                foreach (var ri in result)
                 {
-                    if (trait[i] == trait[i - 1] + 1)
-                    {
-                        continueCount += 1;
-                    }
+                    Console.WriteLine(ri.Key);
                 }
-                conScores.Add(continueCount / ((double)(trait.Length + rs[0].Length) / 2));
+
+
+                var afterDT = DateTime.Now;
+                var ts = afterDT.Subtract(beforDT);
+                //Console.WriteLine("Final Score: {0}", aveScore);
+                Console.WriteLine("Using {0} ms.", ts.TotalMilliseconds);
             }
-            var conScore = conScores.Count > 0 ? conScores.Max() : 0;
-
-            var aveScore = (fcScore + conScore) / 2;
-
-            var afterDT = DateTime.Now;
-            var ts = afterDT.Subtract(beforDT);
-            Console.WriteLine("FirstChar Score: {0}", fcScore);
-            Console.WriteLine("Continuity Score: {0}", conScore);
-            Console.WriteLine("Final Score: {0}", aveScore);
-            Console.WriteLine("Using {0} ms.", ts.TotalMilliseconds);
-            Console.ReadKey();
         }
 
         static string Keyword = "wangyi".ToLower();
 
-        // TODO: Demand Optimization
-        static void SearchWorker(List<int[]> pool, string src, int[] lastTrait, int kwPos, int lastSearchPos)
-        {
-            if (lastTrait[lastTrait.Length - 1] == -1)
-            {
-                var searchPos = lastSearchPos;
-
-                while (true)
-                {
-                    var attachPos = src.IndexOf(Keyword[kwPos], searchPos);
-                    if (attachPos == -1) break;
-
-                    var trait = lastTrait.Select((v, i) => i == kwPos ? attachPos : v).ToArray();
-                    SearchWorker(pool, src, trait, kwPos + 1, attachPos + 1);
-
-                    searchPos = attachPos + 1;
-                }
-            }
-            else
-            {
-                var existSame = false;
-                foreach (var trait in pool)
-                {
-                    var sameCount = 0;
-                    for (var i = 0; i < trait.Length; i += 1)
-                    {
-                        if (trait[i] == lastTrait[i])
-                        {
-                            sameCount += 1;
-                        }
-                    }
-                    if (sameCount == trait.Length)
-                    {
-                        existSame = true;
-                        break;
-                    }
-                }
-
-                if (!existSame)
-                {
-                    pool.Add(lastTrait);
-                }
-            }
-        }
+        
     }
 }

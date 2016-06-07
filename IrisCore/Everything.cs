@@ -64,6 +64,7 @@ namespace Iris.Core
             var request = new RestRequest("/", Method.GET)
                 .AddParameter("search", "regex:" + regexp)
                 .AddParameter("j", 1)
+                .AddParameter("p", 1)
                 .AddParameter("path_column", 1);
 
             var response = client.Execute(request);
