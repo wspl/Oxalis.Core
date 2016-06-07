@@ -60,7 +60,7 @@ namespace Iris.Core
                         matchCount += 1;
                     }
                 }
-                fcScores.Add(matchCount / (double)trait.Length);
+                fcScores.Add(matchCount / ((double)(trait.Length + rs[0].Length) / 2));
             }
             var fcScore = fcScores.Count > 0 ? fcScores.Max() : 0;
 
@@ -76,7 +76,7 @@ namespace Iris.Core
                         continueCount += 1;
                     }
                 }
-                conScores.Add(continueCount / (double)trait.Length);
+                conScores.Add(continueCount / ((double)(trait.Length + rs[0].Length) / 2));
             }
             var conScore = conScores.Count > 0 ? conScores.Max() : 0;
 
@@ -91,7 +91,7 @@ namespace Iris.Core
             Console.ReadKey();
         }
 
-        static string Keyword = "wyiyuyyue".ToLower();
+        static string Keyword = "wangyi".ToLower();
 
         // TODO: Demand Optimization
         static void SearchWorker(List<int[]> pool, string src, int[] lastTrait, int kwPos, int lastSearchPos)
