@@ -21,14 +21,12 @@ namespace Iris.Core
 
         static void Main(string[] args)
         {
-            
-
             var cjk = new CJKTranslator();
             var everything = new Everything();
 
             var displayLink = new Dictionary<string, List<Everything.EverythingResultItem>>();
             var displayLinksDict = new Dictionary<string, List<string>>();
-            var startMenuPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+
             var links = everything.Search(@"Start Menu regex:.lnk$");
             foreach (var link in links.Results)
             {
@@ -51,15 +49,13 @@ namespace Iris.Core
                 var keyword = Console.ReadLine();
                 var beforDT = DateTime.Now;
 
-                var result = new List<KeyValuePair<string, double>>();
-                foreach (var di in displayLinksDict)
-                {
-                    var score = searcher.Match(keyword, di.Value);
-                    if (score > 0)
-                    {
-                        result.Add(new KeyValuePair<string, double>(di.Key, score));
-                    }
-                }
+                var result = (
+                    from di in displayLinksDict
+                    let score = searcher.Match(keyword, di.Value)
+                    where score > 0
+                    select new KeyValuePair<string, double>(di.Key, score)
+                ).ToList();
+
                 result.Sort((pair1, pair2) => -pair1.Value.CompareTo(pair2.Value));
 
                 foreach (var ri in result)
@@ -74,9 +70,5 @@ namespace Iris.Core
                 Console.WriteLine("Using {0} ms.", ts.TotalMilliseconds);
             }
         }
-
-        static string Keyword = "wangyi".ToLower();
-
-        
     }
 }

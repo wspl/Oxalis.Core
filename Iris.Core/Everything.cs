@@ -37,23 +37,21 @@ namespace Iris.Core
 
         public Everything()
         {
-            if (!CheckEverythingAvailable())
+            if (CheckEverythingAvailable()) return;
+            if (CheckPortAvailable(15013))
             {
-                if (CheckPortAvailable(15013))
-                {
-                    // Launch Everything
-                    var proEverything = new Process();
+                // Launch Everything
+                var proEverything = new Process();
 
-                    var proEverythingPath = Path.Combine(Configuration.ResourcesPath, "stein_everything.exe");
-                    var proEverythingArgs = "-install-service -install-client-service";
+                var proEverythingPath = Path.Combine(Configuration.ResourcesPath, "stein_everything.exe");
+                var proEverythingArgs = "-install-service -install-client-service";
 
-                    proEverything.StartInfo = new ProcessStartInfo(proEverythingPath, proEverythingArgs);
-                    proEverything.Start();
-                }
-                else
-                {
-                    throw new Exception("Port is unavailable.");
-                }
+                proEverything.StartInfo = new ProcessStartInfo(proEverythingPath, proEverythingArgs);
+                proEverything.Start();
+            }
+            else
+            {
+                throw new Exception("Port is unavailable.");
             }
         }
 
@@ -73,12 +71,12 @@ namespace Iris.Core
             return result;
         }
 
-        bool CheckPortAvailable(int port)
+        private bool CheckPortAvailable(int port)
         {
             var ipGlobalProperties = IPGlobalProperties.GetIPGlobalProperties();
             var tcpConnInfoArray = ipGlobalProperties.GetActiveTcpConnections();
 
-            foreach (TcpConnectionInformation tcpi in tcpConnInfoArray)
+            foreach (var tcpi in tcpConnInfoArray)
             {
                 if (tcpi.LocalEndPoint.Port == port)
                 {
@@ -89,7 +87,7 @@ namespace Iris.Core
             return true;
         }
 
-        bool CheckEverythingAvailable()
+        private bool CheckEverythingAvailable()
         {
             var client = new RestClient("http://127.0.0.1:15013");
             var request = new RestRequest("/Everything.gif", Method.GET);

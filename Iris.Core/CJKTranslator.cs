@@ -32,7 +32,7 @@ namespace Iris.Core
                 }
                 else
                 {
-                    MultiTranslate(ref tResult, left.Remove(left.Length - 1), right = lastChar + right);;
+                    MultiTranslate(ref tResult, left.Remove(left.Length - 1), lastChar + right);;
                 }
             }
             else
@@ -85,16 +85,10 @@ namespace Iris.Core
 
                 foreach (var pinyin in pinyinString.Split(','))
                 {
-                    var noPhoneticPinyin = pinyin.Select((py) => {
-                        var pIndex = phoneticDictA.IndexOf(py.ToString());
-                        if (pIndex == -1)
-                        {
-                            return py;
-                        }
-                        else
-                        {
-                            return phoneticDictB[pIndex];
-                        }
+                    var noPhoneticPinyin = pinyin.Select(py =>
+                    {
+                        var pIndex = phoneticDictA.IndexOf(py.ToString(), StringComparison.Ordinal);
+                        return pIndex == -1 ? py : phoneticDictB[pIndex];
                     }).ToArray();
 
                     var pyStr = string.Join("", noPhoneticPinyin);

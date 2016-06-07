@@ -14,15 +14,12 @@ namespace Iris.Core
             var pool = new List<int[]>();
             foreach (var ctx in strings)
             {
-                //SearchWorker(keyword, pool, ctx, new int[keyword.Length].Select((v) => -1).ToArray(), 0, 0);
-                var traits = SearchWorkerII(ctx.ToLower(), keyword.ToLower());
-                pool.AddRange(traits.Where((v) => {
-                    foreach (var trait in pool)
-                    {
-                        if (trait.SequenceEqual(v)) return false;
-                    }
-                    return true;
-                }).ToArray());
+                var traits = SearchWorker(ctx.ToLower(), keyword.ToLower());
+                // Remove Dumplication
+                traits = traits.Where(
+                    v => pool.All(trait => !trait.SequenceEqual(v))
+                );
+                pool.AddRange(traits.ToArray());
             }
 
             // Calculate First Chars Pos Score
@@ -36,19 +33,12 @@ namespace Iris.Core
                 fcPosList.Add(currentFcPos);
             }
 
-            var fcScores = new List<double>();
-            foreach (var trait in pool)
-            {
-                var matchCount = 0;
-                foreach (var pos in trait)
-                {
-                    if (fcPosList.Contains(pos))
-                    {
-                        matchCount += 1;
-                    }
-                }
-                fcScores.Add(matchCount / ((double)(trait.Length + strings[0].Length) / 2));
-            }
+            var fcScores = (
+                from trait in pool
+                let matchCount = trait.Count(pos => fcPosList.Contains(pos))
+                select matchCount / ((double)(trait.Length + strings[0].Length) / 2)
+            ).ToList();
+            
             var fcScore = fcScores.Count > 0 ? fcScores.Max() : 0;
 
             // Calculate Continuity Score
@@ -68,11 +58,10 @@ namespace Iris.Core
             var conScore = conScores.Count > 0 ? conScores.Max() : 0;
 
             // Front Score
-            var fntScores = new List<double>();
-            foreach (var trait in pool)
-            {
-                fntScores.Add((strings[0].Length - trait[0]) / (double)strings[0].Length);
-            }
+            var fntScores = pool.Select(
+                trait => (strings[0].Length - trait[0]) / (double)strings[0].Length
+            ).ToList();
+
             var fntScore = fntScores.Count > 0 ? fntScores.Max() : 0;
 
             var aveScore = fcScore + conScore + fntScore;
@@ -80,9 +69,8 @@ namespace Iris.Core
             return aveScore;
         }
 
-        private List<int[]> SearchWorkerII(string src, string keyword)
+        private IEnumerable<int[]> SearchWorker(string src, string keyword)
         {
-            var initTrait = new int[keyword.Length].Select((v) => -1).ToArray();
             var parentTraits = new Dictionary<int, List<int[]>>();
 
             for (var kcIndex = 0; kcIndex < keyword.Length; kcIndex += 1)
@@ -90,7 +78,7 @@ namespace Iris.Core
                 var kc = keyword[kcIndex];
                 if (kcIndex == 0)
                 {
-                    var matchFrom = 0;
+                    const int matchFrom = 0;
                     var nextMatchPos = matchFrom;
 
                     parentTraits[0] = new List<int[]>();
@@ -138,51 +126,6 @@ namespace Iris.Core
             }
 
             return parentTraits[keyword.Length - 1];
-        }
-
-        // Too slowly
-        private void SearchWorker(string keyword, List<int[]> pool, string src, int[] lastTrait, int kwPos, int lastSearchPos)
-        {
-            if (lastTrait[lastTrait.Length - 1] == -1)
-            {
-                var searchPos = lastSearchPos;
-
-                while (true)
-                {
-                    var attachPos = src.IndexOf(keyword[kwPos], searchPos);
-                    if (attachPos == -1) break;
-
-                    var trait = lastTrait.Select((v, i) => i == kwPos ? attachPos : v).ToArray();
-                    SearchWorker(keyword, pool, src, trait, kwPos + 1, attachPos + 1);
-
-                    searchPos = attachPos + 1;
-                }
-            }
-            else
-            {
-                var existSame = false;
-                foreach (var trait in pool)
-                {
-                    var sameCount = 0;
-                    for (var i = 0; i < trait.Length; i += 1)
-                    {
-                        if (trait[i] == lastTrait[i])
-                        {
-                            sameCount += 1;
-                        }
-                    }
-                    if (sameCount == trait.Length)
-                    {
-                        existSame = true;
-                        break;
-                    }
-                }
-
-                if (!existSame)
-                {
-                    pool.Add(lastTrait);
-                }
-            }
         }
     }
 }
