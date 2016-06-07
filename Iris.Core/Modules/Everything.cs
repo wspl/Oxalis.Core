@@ -1,40 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using RestSharp;
-using Jil;
-using System.Net.NetworkInformation;
 using System.Diagnostics;
 using System.IO;
-using System.Reflection;
+using System.Net.NetworkInformation;
+using Jil;
+using RestSharp;
 
-namespace Iris.Core
+namespace Iris.Core.Modules
 {
-    class Everything
+    public class EverythingResult
     {
-        public class EverythingResult
-        {
-            [JilDirective(Name = "totalResults")]
-            public int TotalResults { get; set; }
+        [JilDirective(Name = "totalResults")]
+        public int TotalResults { get; set; }
 
-            [JilDirective(Name = "results")]
-            public List<EverythingResultItem> Results { get; set; }
-        }
+        [JilDirective(Name = "results")]
+        public List<EverythingResultItem> Results { get; set; }
+    }
 
-        public class EverythingResultItem
-        {
-            [JilDirective(Name = "type")]
-            public string Type { get; set; }
+    public class EverythingResultItem
+    {
+        [JilDirective(Name = "type")]
+        public string Type { get; set; }
 
-            [JilDirective(Name = "name")]
-            public string Name { get; set; }
+        [JilDirective(Name = "name")]
+        public string Name { get; set; }
 
-            [JilDirective(Name = "path")]
-            public string Path { get; set; }
-        }
+        [JilDirective(Name = "path")]
+        public string Path { get; set; }
+    }
 
+
+    public class Everything
+    {
         public Everything()
         {
             if (CheckEverythingAvailable()) return;

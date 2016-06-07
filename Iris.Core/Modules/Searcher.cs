@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Iris.Core
+namespace Iris.Core.Modules
 {
-    class Searcher
+    public class Searcher
     {
         public double Match(string keyword, List<string> strings)
         {
