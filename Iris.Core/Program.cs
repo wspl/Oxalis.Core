@@ -25,7 +25,6 @@ namespace Iris.Core
                     Console.WriteLine(ri);
                 }
 
-
                 var afterDT = DateTime.Now;
                 var ts = afterDT.Subtract(beforDT);
                 //Console.WriteLine("Final Score: {0}", av+eScore);
